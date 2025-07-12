@@ -34,38 +34,6 @@ class Birthday(Field):
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
 
 
-class Record:
-    def __init__(self, name):
-        self.name = Name(name)
-        self.phones = []
-        self.birthday = None
-
-    def add_phone(self, phone):
-        self.phones.append(Phone(phone))
-
-    def add_birthday(self, birthday):
-        self.birthday = Birthday(birthday)
-
-    def remove_phone(self, phone):
-        self.phones = [p for p in self.phones if p.value != phone]  # comprehension
-
-    def edit_phone(self, old_phone, new_phone):
-        for i, p in enumerate(self.phones):
-            if p.value == old_phone:
-                self.phones[i] = Phone(new_phone)
-                return
-        raise ValueError("Old number not found")
-
-    def find_phone(self, phone):
-        for p in self.phones:
-            if p.value == phone:
-                return p
-        return None
-
-    def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, {self.birthday.value.strftime("%d.%m.%Y") if self.birthday else "N/A"}"
-
-
 class AddressBook(UserDict):
     def add_record(self, record):
         self.data[record.name.value] = record
@@ -95,6 +63,35 @@ class AddressBook(UserDict):
         return result
 
 
+class Record:
+    def __init__(self, name):
+        self.name = Name(name)
+        self.phones = []
+        self.birthday = None
+
+    def add_birthday(self, birthday):
+        self.birthday = Birthday(birthday)
+
+    def remove_phone(self, phone):
+        self.phones = [p for p in self.phones if p.value != phone]  # comprehension
+
+    def edit_phone(self, old_phone, new_phone):
+        for i, p in enumerate(self.phones):
+            if p.value == old_phone:
+                self.phones[i] = Phone(new_phone)
+                return
+        raise ValueError("Old number not found")
+
+    def find_phone(self, phone):
+        for p in self.phones:
+            if p.value == phone:
+                return p
+        return None
+
+    def __str__(self):
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, {self.birthday.value.strftime("%d.%m.%Y") if self.birthday else "N/A"}"
+
+
 # ______________ end of classes implementation _______________#
 
 
@@ -119,11 +116,20 @@ def parse_input(user_input):
     return cmd, *args
 
 
+
+
 @input_error
-def add_contact(args, contacts):
-    name, phone = args
-    contacts[name] = phone
-    return "Contact added."
+def add_contact(args, book: AddressBook):
+    name, phone, *_ = args
+    record = book.find(name)
+    message = "Contact updated."
+    if record is None:
+        record = Record(name)
+        book.add_record(record)
+        message = "Contact added."
+    if phone:
+        record.add_phone(phone)
+    return message
 
 
 @input_error
