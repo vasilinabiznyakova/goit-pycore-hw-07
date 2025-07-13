@@ -92,7 +92,7 @@ class Record:
         return None
 
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, {self.birthday.value.strftime("%d.%m.%Y") if self.birthday else "N/A"}"
+        return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}, {self.birthday.value.strftime('%d.%m.%Y') if self.birthday else 'N/A'}"
 
 
 # ______________ end of classes implementation _______________#
@@ -126,6 +126,8 @@ def parse_input(user_input):
 
 @input_error
 def add_contact(args, book: AddressBook):
+    if len(args) < 2:
+        raise IndexError
     name, phone, *_ = args
     record = book.find(name)
     message = "Contact updated."
