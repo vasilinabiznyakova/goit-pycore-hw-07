@@ -111,6 +111,7 @@ def input_error(func):
             return "Incomplete command. Please provide all necessary details."
         except Exception as e:
             return f"Unexpected error: {str(e)}"
+
     return inner
 
 
@@ -168,7 +169,7 @@ def show_all(book: AddressBook):
 
 
 @input_error
-def add_birthday(args, book):
+def add_birthday(args, book: AddressBook):
     name, birthday = args
     record = book.find(name)
     if record:
@@ -178,7 +179,7 @@ def add_birthday(args, book):
 
 
 @input_error
-def show_birthday(args, book):
+def show_birthday(args, book: AddressBook):
     name = args[0]
     record = book.find(name)
     if record and record.birthday:
@@ -189,7 +190,7 @@ def show_birthday(args, book):
 
 
 @input_error
-def birthdays(args, book):
+def birthdays(args, book: AddressBook):
     upcoming = book.get_upcoming_birthdays()
     return "\n".join(upcoming) if upcoming else "No birthdays this week."
 
