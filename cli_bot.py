@@ -69,6 +69,9 @@ class Record:
         self.phones = []
         self.birthday = None
 
+    def add_phone(self, phone):
+        self.phones.append(Phone(phone))
+
     def add_birthday(self, birthday):
         self.birthday = Birthday(birthday)
 
@@ -100,22 +103,24 @@ def input_error(func):
         try:
             return func(*args, **kwargs)
 
-        except ValueError:
-            return "Give me name and phone please"
+        except ValueError as e:
+            return str(e)
         except KeyError:
             return "This contact does not exist."
         except IndexError:
             return "Incomplete command. Please provide all necessary details."
-
+        except Exception as e:
+            return f"Unexpected error: {str(e)}"
     return inner
 
 
 def parse_input(user_input):
-    cmd, *args = user_input.split()
-    cmd = cmd.strip().lower()
-    return cmd, *args
-
-
+    parts = user_input.strip().split()
+    if not parts:
+        return "", []
+    cmd = parts[0].lower()
+    args = parts[1:]
+    return cmd, args
 
 
 @input_error
@@ -133,25 +138,33 @@ def add_contact(args, book: AddressBook):
 
 
 @input_error
-def change_contact(args, contacts):
-    name, phone = args
-    if name in contacts:
-        contacts[name] = phone
-        return "Contact updated."
+def change_contact(args, book: AddressBook):
+    name, old_phone, new_phone = args
+    record = book.find(name)
+    if record:
+        record.edit_phone(old_phone, new_phone)
+        return "Phone updated."
     return "Contact not found."
 
 
 @input_error
-def show_phone(args, contacts):
+def show_phone(args, book: AddressBook):
     name = args[0]
-    return contacts.get(name, "Contact not found.")
+    record = book.find(name)
+    if record:
+        phones = "; ".join(p.value for p in record.phones)
+        return phones if phones else "No phones found."
+    return "Contact not found."
 
 
 @input_error
-def show_all(contacts):
-    if not contacts:
+def show_all(book: AddressBook):
+    if not book.data:
         return "No contacts found."
-    return "\n".join(f"{name}: {phone}" for name, phone in contacts.items())
+    result = []
+    for record in book.data.values():
+        result.append(str(record))
+    return "\n".join(result)
 
 
 @input_error
